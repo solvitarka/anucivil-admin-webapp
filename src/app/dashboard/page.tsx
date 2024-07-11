@@ -1,12 +1,7 @@
 import Link from "next/link";
 import { Users, CircleUser, Home, LineChart, Menu, Package,DollarSign,CreditCard, Package2,Activity, Search, ShoppingCart, Pickaxe } from "lucide-react";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import SideNav from "@/components/dashboard/sidenav";
 import InfoBanner from "@/components/dashboard/InfoBanner";
 import InfoTable from "@/components/dashboard/InfoTable";
@@ -49,8 +44,7 @@ const Dashboard: React.FC = () => {
      
      <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
        <SideNav/>
-      </aside> 
-    
+      </aside>   
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <InfoBanner  data={infoData}/>
