@@ -42,10 +42,7 @@ const Dashboard: React.FC = () => {
   return (
     <div>
      
-     <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-       <SideNav/>
-      </aside>   
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+ 
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <InfoBanner  data={infoData}/>
       <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3">
@@ -138,7 +135,7 @@ const Dashboard: React.FC = () => {
       </div>
       </main>
       </div>
-  </div>
+
   );
 }
 export default Dashboard;
