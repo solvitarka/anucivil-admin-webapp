@@ -58,7 +58,10 @@ const Dashboard: React.FC = () => {
       <InfoTable/>
       <Card x-chunk="dashboard-01-chunk-5">
             <CardHeader>
-              <CardTitle>Recent Sales</CardTitle>
+              <CardTitle>Bills Recieved</CardTitle>
+              <CardDescription>
+                  Recent bills recieved from your app.
+                </CardDescription>
             </CardHeader>
             <CardContent className="grid gap-8">
               <div className="flex items-center gap-4">
