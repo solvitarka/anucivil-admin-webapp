@@ -41,7 +41,7 @@ export default function SideNav() {
       </TooltipTrigger>
       <TooltipContent side="right">Dashboard</TooltipContent>
     </Tooltip>
-    <Tooltip>
+    {/* <Tooltip>
       <TooltipTrigger asChild>
         <Link
           href="/work"
@@ -52,7 +52,7 @@ export default function SideNav() {
         </Link>
       </TooltipTrigger>
       <TooltipContent side="right">Orders</TooltipContent>
-    </Tooltip>
+    </Tooltip> */}
     <Tooltip>
       <TooltipTrigger asChild>
         <Link
