@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Users, CircleUser, Home, LineChart, Menu, Package,DollarSign,CreditCard, Package2,Activity, Search, ShoppingCart, Pickaxe } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import SideNav from "@/components/dashboard/sidenav";
 import InfoBanner from "@/components/dashboard/InfoBanner";
 import InfoTable from "@/components/dashboard/InfoTable";
 import {
@@ -68,7 +67,7 @@ const Dashboard: React.FC = () => {
                     olivia.martin@email.com
                   </p>
                 </div>
-                <div className="ml-auto font-medium">+$1,999.00</div>
+                <div className="ml-auto font-medium">+₹1,999.00</div>
               </div>
               <div className="flex items-center gap-4">
                 <Avatar className="hidden h-9 w-9 sm:flex">
@@ -83,7 +82,7 @@ const Dashboard: React.FC = () => {
                     jackson.lee@email.com
                   </p>
                 </div>
-                <div className="ml-auto font-medium">+$39.00</div>
+                <div className="ml-auto font-medium">+₹39.00</div>
               </div>
               <div className="flex items-center gap-4">
                 <Avatar className="hidden h-9 w-9 sm:flex">
@@ -98,7 +97,7 @@ const Dashboard: React.FC = () => {
                     isabella.nguyen@email.com
                   </p>
                 </div>
-                <div className="ml-auto font-medium">+$299.00</div>
+                <div className="ml-auto font-medium">+₹299.00</div>
               </div>
               <div className="flex items-center gap-4">
                 <Avatar className="hidden h-9 w-9 sm:flex">
@@ -113,7 +112,7 @@ const Dashboard: React.FC = () => {
                     will@email.com
                   </p>
                 </div>
-                <div className="ml-auto font-medium">+$99.00</div>
+                <div className="ml-auto font-medium">+₹99.00</div>
               </div>
               <div className="flex items-center gap-4">
                 <Avatar className="hidden h-9 w-9 sm:flex">
@@ -128,7 +127,7 @@ const Dashboard: React.FC = () => {
                     sofia.davis@email.com
                   </p>
                 </div>
-                <div className="ml-auto font-medium">+$39.00</div>
+                <div className="ml-auto font-medium">+₹39.00</div>
               </div>
             </CardContent>
           </Card>

@@ -1,10 +1,10 @@
-export default function DashboardLayout({
+export default function UsersLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <div className="bg-muted/40 ">
+    <div >
 
         {children}
 
