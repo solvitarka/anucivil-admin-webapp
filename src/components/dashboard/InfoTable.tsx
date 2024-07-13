@@ -1,128 +1,19 @@
+// src/components/dashboard/InfoTable.tsx
+
 "use client"; // Add this directive at the top
 
-import Link from "next/link";
 import { useState } from "react";
-import { ArrowUpRight, ListFilter, File } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ListFilter } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import HomeTable from "./HomeTable"; // Import the new TableComponent
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-const data = [
-  {
-    customer: "Liam Johnson",
-    email: "liam@example.com",
-    type: "Sale",
-    status: "Fulfilled",
-    date: "2023-06-23",
-    amount: "$250.00",
-  },
-  {
-    customer: "Olivia Smith",
-    email: "olivia@example.com",
-    type: "Refund",
-    status: "In Progress",
-    date: "2023-06-24",
-    amount: "$150.00",
-  },
-  {
-    customer: "Noah Williams",
-    email: "noah@example.com",
-    type: "Subscription",
-    status: "Fulfilled",
-    date: "2023-06-25",
-    amount: "$350.00",
-  },
-  {
-    customer: "Liam Johnson",
-    email: "liam@example.com",
-    type: "Sale",
-    status: "Fulfilled",
-    date: "2023-06-23",
-    amount: "$250.00",
-  },
+const statuses = ["reportRecieved"
+, "Sampling In Process", "Action Required", "Quotation Accepted", "Sent To Lab","reportShipped","Quotation Sent" ,"Quotation Requested","quotationReviewRequired","reportReviewRequired" ];
 
-  {
-    customer: "Noah Williams",
-    email: "noah@example.com",
-    type: "Subscription",
-    status: "Payment Pending",
-    date: "2023-06-25",
-    amount: "$350.00",
-  },
-  {
-    customer: "Noah Williams",
-    email: "noah@example.com",
-    type: "Subscription",
-    status: "In Progress",
-    date: "2023-06-25",
-    amount: "$350.00",
-  },
-   {
-    customer: "Noah Williams",
-    email: "noah@example.com",
-    type: "Subscription",
-    status: "Fulfilled",
-    date: "2023-06-25",
-    amount: "$350.00",
-  },
-  {
-    customer: "Liam Johnson",
-    email: "liam@example.com",
-    type: "Sale",
-    status: "Fulfilled",
-    date: "2023-06-23",
-    amount: "$250.00",
-  },
-
-  {
-    customer: "Noah Williams",
-    email: "noah@example.com",
-    type: "Subscription",
-    status: "Payment Pending",
-    date: "2023-06-25",
-    amount: "$350.00",
-  },
-  {
-    customer: "Noah Williams",
-    email: "noah@example.com",
-    type: "Subscription",
-    status: "In Progress",
-    date: "2023-06-25",
-    amount: "$350.00",
-  },
-  {
-    customer: "Emma Brown",
-    email: "emma@example.com",
-    type: "Sale",
-    status: "At Laboratory",
-    date: "2023-06-26",
-    amount: "$450.00",
-  },
-];
-
-export default function InfoTable() {
-  const [filter, setFilter] = useState<string[]>(["Fulfilled", "Declined","In Progress","At Laboratory","Payment Pending"]);
+export default function InfoTable({ data }: { data: any[] }) {
+  const [filter, setFilter] = useState<string[]>(statuses);
 
   const filteredData = data.filter(item => filter.includes(item.status));
 
@@ -134,6 +25,8 @@ export default function InfoTable() {
     );
   };
 
+  console.log("InfoTable data:", data); // Debug statement
+
   return (
     <div className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
       <Tabs defaultValue="week" className="xl:col-span-1">
@@ -142,91 +35,57 @@ export default function InfoTable() {
             <TabsTrigger value="week">Week</TabsTrigger>
             <TabsTrigger value="month">Month</TabsTrigger>
             <TabsTrigger value="year">Year</TabsTrigger>
-          </TabsList> 
+          </TabsList>
         </div>
         <TabsContent value="week">
           <Card>
-            <CardHeader className="flex flex-row items-center">
-              <div className="grid gap-2">
-                <CardTitle>Work Orders</CardTitle>
-                <CardDescription>
-                  Recent work orders from your app.
-                </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Projects Overview
+              </CardTitle>
+              <div className="flex items-center gap-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <Button className="ml-auto p-2" variant="outline" size="icon">
+                      <ListFilter className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[150px]">
+                    <DropdownMenuLabel>Filter Status</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {statuses.map(status => (
+                      <DropdownMenuCheckboxItem
+                        key={status}
+                        checked={filter.includes(status)}
+                        onCheckedChange={() => handleFilterChange(status)}
+                      >
+                        {status}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-              <div className="ml-auto gap-1">
-                <DropdownMenu >
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 gap-1 text-sm"
-                >
-                  <ListFilter className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only">Filter</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {["Fulfilled", "Declined","In Progress","At Laboratory","Payment Pending"].map(status => (
-                  <DropdownMenuCheckboxItem
-                    key={status}
-                    checked={filter.includes(status)}
-                    onCheckedChange={() => handleFilterChange(status)}
-                  >
-                    {status}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu></div>
-             
             </CardHeader>
             <CardContent>
-              <HomeTable data={filteredData} />
+              <div className="space-y-4">
+                {filteredData.map((project) => (
+                  <div key={project.id} className="flex items-center">
+                    <div className="w-1/2">
+                      <p className="text-sm font-medium leading-none">{project.name}</p>
+                      <p className="text-sm text-muted-foreground">{project.location}</p>
+                    </div>
+                    <div className="ml-auto text-right">
+                      <p className="text-sm font-medium leading-none">{project.status}</p>
+                    </div>
+                  </div>
+                ))}
+                {filteredData.length === 0 && <p>No projects match the selected filter.</p>} {/* Message for no data */}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
-        <TabsContent value="month">
-          <Card>
-            <CardHeader className="flex flex-row items-center">
-              <div className="grid gap-2">
-                <CardTitle>Work Orders</CardTitle>
-                <CardDescription>
-                  Recent work orders from your app.
-                </CardDescription>
-              </div>
-             <div className="ml-auto gap-1">
-                <DropdownMenu >
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 gap-1 text-sm"
-                >
-                  <ListFilter className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only">Filter</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {["Fulfilled", "Declined","In Progress","At Laboratory","Payment Pending"].map(status => (
-                  <DropdownMenuCheckboxItem
-                    key={status}
-                    checked={filter.includes(status)}
-                    onCheckedChange={() => handleFilterChange(status)}
-                  >
-                    {status}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu></div>
-            </CardHeader>
-            <CardContent>
-              <HomeTable data={filteredData} />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        <TabsContent value="month">...</TabsContent>
+        <TabsContent value="year">...</TabsContent>
       </Tabs>
     </div>
   );

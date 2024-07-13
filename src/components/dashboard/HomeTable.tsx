@@ -44,12 +44,10 @@ interface TableComponentProps {
 }
 
 interface TableData {
-  customer: string;
-  email: string;
-  type: string;
+  name: string;
   status: string;
-  date: string;
-  amount: string;
+  location: string;
+  paymentDue: string;
 }
 
 const HomeTable: React.FC<TableComponentProps> = ({ data }) => {
