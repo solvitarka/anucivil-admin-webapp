@@ -82,7 +82,7 @@ export default function WorkPage() {
                 <Button variant="outline" size="sm">
                   Discard
                 </Button>
-                <Button size="sm">Save Product</Button>
+                <Button size="sm">Save Project</Button>
               </div>
             </div>
             <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
@@ -252,52 +252,26 @@ export default function WorkPage() {
                     </Button>
                   </CardFooter>
                 </Card>
+                
                 <Card x-chunk="dashboard-07-chunk-2">
-                  <CardHeader>
-                    <CardTitle>Product Category</CardTitle>
+                   <CardHeader>
+                    <CardTitle>Upload Bill</CardTitle>
+                    <CardDescription>
+                      Upload Final bill for the work
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-6 sm:grid-cols-3">
-                      <div className="grid gap-3">
-                        <Label htmlFor="category">Category</Label>
-                        <Select>
-                          <SelectTrigger
-                            id="category"
-                            aria-label="Select category"
-                          >
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="clothing">Clothing</SelectItem>
-                            <SelectItem value="electronics">
-                              Electronics
-                            </SelectItem>
-                            <SelectItem value="accessories">
-                              Accessories
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="grid gap-3">
-                        <Label htmlFor="subcategory">
-                          Subcategory (optional)
-                        </Label>
-                        <Select>
-                          <SelectTrigger
-                            id="subcategory"
-                            aria-label="Select subcategory"
-                          >
-                            <SelectValue placeholder="Select subcategory" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                            <SelectItem value="hoodies">Hoodies</SelectItem>
-                            <SelectItem value="sweatshirts">
-                              Sweatshirts
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                   <CardContent>
+                    <div>
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        style={{ display: "none" }}
+                        onChange={handleFileChange}
+                        accept=".doc,.docx,.pdf"
+                      />
+                      <Button size="sm" variant="secondary" onClick={handleButtonClick}>
+                        Upload File
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
