@@ -285,3 +285,5 @@ const HomeTable: React.FC<TableComponentProps> = ({ data }) => {
 };
 
 export default HomeTable;
+
+//To Work on Click Action
