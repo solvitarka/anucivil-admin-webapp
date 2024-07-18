@@ -52,6 +52,7 @@ interface TableComponentProps {
 }
 
 interface TableData {
+  id: string;
   name: string;
   location: string;
   updates: { date: string; id: number; title: string }[];
@@ -95,10 +96,9 @@ const HomeTable: React.FC<TableComponentProps> = ({ data }) => {
     loadUserNames();
   }, [data]);
 
-  function handleNavigation() {
-    return router.push("/work");
-  }
-
+  const handleNavigation = (projectId: string) => {
+    router.push(`/work?projectId=${projectId}`);
+  };
   const columns: ColumnDef<TableData>[] = [
     {
       accessorKey: "name",
@@ -160,7 +160,7 @@ const HomeTable: React.FC<TableComponentProps> = ({ data }) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleNavigation}>
+              <DropdownMenuItem onClick={() => handleNavigation(item.id)}>
                 View work order
               </DropdownMenuItem>
             </DropdownMenuContent>
