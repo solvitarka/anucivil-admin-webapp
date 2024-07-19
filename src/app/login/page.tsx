@@ -1,10 +1,44 @@
-import Link from "next/link";
-import Image from "next/image"
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+// src/app/login/page.tsx
+'use client'; // This line makes sure the component is treated as a client component
 
-export default function LoginPage() {
+import { useState } from 'react';
+import { useRouter } from 'next/navigation'; // Adjusted to next/navigation
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth, db } from '@/lib/firebase/firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+const LoginPage = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+
+      if (userDoc.exists() && userDoc.data()?.isAdmin) {
+        router.push('/dashboard');
+      } else {
+        setError('You are not authorized to access this page.');
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred.');
+      }
+    }
+  };
+
   return (
     <div className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
       <div className="flex items-center justify-center py-12">
@@ -15,7 +49,7 @@ export default function LoginPage() {
               Enter your email below to login to your account
             </p>
           </div>
-          <div className="grid gap-4">
+          <form onSubmit={handleLogin} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -23,31 +57,30 @@ export default function LoginPage() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div className="grid gap-2">
               <div className="flex items-center">
                 <Label htmlFor="password">Password</Label>
-                <Link
-                  href="/forgot-password"
-                  className="ml-auto inline-block text-sm underline"
-                >
+                <Link href="/forgot-password" className="ml-auto inline-block text-sm underline">
                   Forgot your password?
                 </Link>
               </div>
-              <Input id="password" type="password" required />
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
             <Button type="submit" className="w-full">
               Login
             </Button>
-            
-          </div>
-          {/* <div className="mt-4 text-center text-sm">
-            Don&apos;t have an account?{" "}
-            <Link href="#" className="underline">
-              Sign up
-            </Link>
-          </div> */}
+            {error && <p className="text-red-500">{error}</p>}
+          </form>
         </div>
       </div>
       <div className="hidden bg-muted lg:block">
@@ -60,5 +93,7 @@ export default function LoginPage() {
         />
       </div>
     </div>
-  )
-}
+  );
+};
+
+export default LoginPage;

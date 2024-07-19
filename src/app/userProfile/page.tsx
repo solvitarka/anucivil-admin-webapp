@@ -32,10 +32,11 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {}
 import { useRouter,usePathname, useSearchParams } from "next/navigation";
 import { collection, query, where, getDocs,  } from "firebase/firestore";
 import HomeTable from "@/components/dashboard/HomeTable";
+import withAuth from '@/components/withAuth';
 // import { db } from '../../lib/firebase/firebaseConfig';
 
 
-export default function UserProfilePage() {
+const UserProfilePage: React.FC = () => {
 
   const searchParams = useSearchParams();
   const userId = searchParams.get('userId');
@@ -297,3 +298,5 @@ function MapPinIcon(props: IconProps) {
       </svg>
     );
   }
+
+  export default withAuth(UserProfilePage);

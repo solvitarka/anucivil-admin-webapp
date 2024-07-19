@@ -3,6 +3,8 @@ import React, { useRef, useEffect, useState } from "react";
 import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db, storage } from "../../lib/firebase/firebaseConfig";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import withAuth from '@/components/withAuth';
+
 
 import { ChevronLeft, PlusCircle, Upload, Save, FileText, Link as LinkIcon } from "lucide-react";
 
@@ -22,7 +24,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export default function WorkPage() {
+const WorkPage: React.FC = () =>  {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const quotationInputRef = useRef<HTMLInputElement>(null);
   const reportInputRef = useRef<HTMLInputElement>(null);
@@ -318,11 +320,11 @@ export default function WorkPage() {
                 {project.isOwnerDifferent && (
                   <div className="grid gap-6 md:grid-cols-2">
                     <div>
-                      <Label htmlFor="ownerName">Owner Name</Label>
+                      <Label htmlFor="ownerName">Owner/Supervisor Name</Label>
                       <Input id="ownerName" value={project.ownerName} onChange={handleInputChange} className="mt-1" />
                     </div>
                     <div>
-                      <Label htmlFor="ownerPhone">Owner Phone</Label>
+                      <Label htmlFor="ownerPhone">Owner/Supervisor Phone</Label>
                       <Input id="ownerPhone" value={project.ownerPhone} onChange={handleInputChange} className="mt-1" />
                     </div>
                   </div>
@@ -406,6 +408,7 @@ export default function WorkPage() {
                       </Button>
                     </div>
                   )}
+                
                 </div>
               </CardContent>
             </Card>
@@ -436,3 +439,5 @@ export default function WorkPage() {
     </div>
   );
 }
+
+export default withAuth(WorkPage);

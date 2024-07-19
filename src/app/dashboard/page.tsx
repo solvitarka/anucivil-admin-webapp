@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import withAuth from '@/components/withAuth';
 import { useEffect, useState } from 'react';
 import { Users, CircleUser, Home, LineChart, Menu, Package,DollarSign,CreditCard, Package2,Activity, Search, ShoppingCart, Pickaxe } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +21,10 @@ const Dashboard: React.FC = () => {
   //The FB Function -> 
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [amountRecieved, setAmountRecieved] = useState<any>(0);
+  const [amountDue, setAmountDue] = useState<any>(0);
+  const [inProgress, setInProgress] = useState<any>(0);
+  const [inLab, setInLab] = useState<any>(0);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -28,6 +33,21 @@ const Dashboard: React.FC = () => {
         const projectsData: any[] = [];
         querySnapshot.forEach((doc) => {
           projectsData.push({ id: doc.id, ...doc.data() });
+          setAmountRecieved(amountRecieved+doc.data().paymentReceived);
+          setAmountDue(amountDue+doc.data().paymentDue);
+
+          if(doc.data().status =='Sampling In Process'||'Quotation Accepted'||'Sent To Lab'||'reportReviewRequired'){
+            setInProgress(inProgress + 1);
+
+          }
+
+          if(doc.data().status =='Sent To Lab'){
+            setInLab(inLab + 1);
+
+          }
+
+          
+
         });
         console.log("Fetched projects data:", projectsData); // Debug statement
         setProjects(projectsData);
@@ -49,26 +69,26 @@ const Dashboard: React.FC = () => {
     {
       title: 'Total Work Orders',
       icon: 'DollarSign',
-      value: '₹45,231.89',
-      change: '+20.1% from last month',
+      value: `₹ ${amountDue+amountRecieved}`,
+      change: '',
     },
     {
       title: 'In Progress',
       icon: 'Users',
-      value: '2350',
-      change: '+180.1% from last month',
+      value: inProgress,
+      change: '',
     },
     {
       title: 'At Laboratory',
       icon: 'CreditCard',
-      value: '12',
-      change: '+19% from last month',
+      value: inLab,
+      change: '',
     },
     {
       title: 'Pending Payments',
       icon: 'Activity',
-      value: '573',
-      change: '+201 since last hour',
+      value: `₹ ${amountDue}`,
+      change: '',
     },
   ];
 
@@ -171,4 +191,4 @@ const Dashboard: React.FC = () => {
 
   );
 }
-export default Dashboard;
+export default withAuth(Dashboard);
