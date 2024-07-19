@@ -1,65 +1,69 @@
 "use client";
-import Link from "next/link";
 import React, { useRef, useEffect, useState } from "react";
-import Image from "next/image";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../lib/firebase/firebaseConfig";
+import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { db, storage } from "../../lib/firebase/firebaseConfig";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-import {
-  ChevronLeft,
-  PlusCircle,
-  Upload,
-} from "lucide-react";
+import { ChevronLeft, PlusCircle, Upload, Save, FileText, Link as LinkIcon } from "lucide-react";
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useRouter,usePathname, useSearchParams } from "next/navigation"; // Correct import for useRouter
+import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function WorkPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const quotationInputRef = useRef<HTMLInputElement>(null);
+  const reportInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = searchParams.get('projectId');
   const [project, setProject] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [newUpdate, setNewUpdate] = useState<string>("");
+  const [trackingLink, setTrackingLink] = useState<string>("");
+  
+
+
+  const statuses = [
+    "reportReceived",
+    "Sampling In Process",
+    "Action Required",
+    "Quotation Accepted",
+    "Sent To Lab",
+    "reportShipped",
+    "Quotation Sent",
+    "Quotation Requested",
+    "quotationReviewRequired",
+    "reportReviewRequired"
+  ];
 
   useEffect(() => {
     const fetchProject = async () => {
-      if (!projectId) return;
+      if (!projectId) {
+        console.error("No project ID provided");
+        setLoading(false);
+        return;
+      }
 
       try {
         const docRef = doc(db, "projects", projectId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setProject(docSnap.data());
-          console.log(docSnap.data());
+          setProject({ id: docSnap.id, ...docSnap.data() });
+          setTrackingLink(docSnap.data().trackingLink || "");
         } else {
           console.error("No such document!");
         }
@@ -81,199 +85,351 @@ export default function WorkPage() {
     return <p>No project found</p>;
   }
 
-  const handleButtonClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setProject({ ...project, [e.target.id]: e.target.value });
+  };
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (newStatus !== project.status) {
+      const update = {
+        date: new Date().toLocaleString(),
+        id: project.updates.length + 1,
+        title: `Status changed to ${newStatus}`
+      };
+
+      try {
+        const docRef = doc(db, "projects", projectId!);
+        await updateDoc(docRef, {
+          status: newStatus,
+          updates: arrayUnion(update)
+        });
+
+        setProject({
+          ...project,
+          status: newStatus,
+          updates: [...project.updates, update]
+        });
+
+        alert("Status updated successfully!");
+      } catch (error) {
+        console.error("Error updating status:", error);
+        alert("Error updating status.");
+      }
     }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files) {
-      console.log("Selected file:", files[0]);
+  const handleSwitchChange = (id: string, checked: boolean) => {
+    setProject({ ...project, [id]: checked });
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, fileType: 'boq' | 'quotation' | 'report') => {
+    const file = event.target.files?.[0];
+    if (!file || !projectId) return;
+
+    const storageRef = ref(storage, `projects/${projectId}/${fileType}/${file.name}`);
+    try {
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      const docRef = doc(db, "projects", projectId);
+      let updateObj = {};
+      if (fileType === 'boq') {
+        updateObj = { customBoqUrl: downloadURL };
+      } else if (fileType === 'quotation') {
+        updateObj = { quotationUrl: downloadURL };
+      } else if (fileType === 'report') {
+        updateObj = { reportUrl: downloadURL };
+      }
+      
+      await updateDoc(docRef, updateObj);
+
+      setProject({ ...project, ...updateObj });
+      alert(`${fileType.charAt(0).toUpperCase() + fileType.slice(1)} uploaded successfully!`);
+    } catch (error) {
+      console.error(`Error uploading ${fileType}:`, error);
+      alert(`Error uploading ${fileType}.`);
     }
+  };
+
+  const handleAddUpdate = async () => {
+    if (!newUpdate.trim() || !projectId) return;
+
+    const update = {
+      date: new Date().toLocaleString(),
+      id: project.updates.length + 1,
+      title: newUpdate
+    };
+
+    try {
+      const docRef = doc(db, "projects", projectId);
+      await updateDoc(docRef, {
+        updates: arrayUnion(update)
+      });
+
+      setProject({
+        ...project,
+        updates: [...project.updates, update]
+      });
+
+      setNewUpdate("");
+      alert("Update added successfully!");
+    } catch (error) {
+      console.error("Error adding update:", error);
+      alert("Error adding update.");
+    }
+  };
+
+  const handleSaveProject = async () => {
+    if (!projectId) return;
+
+    try {
+      const docRef = doc(db, "projects", projectId);
+      await updateDoc(docRef, {
+        name: project.name,
+        location: project.location,
+        area: project.area,
+        boreHoleDepth: project.boreHoleDepth,
+        boreHoles: project.boreHoles,
+        customBoQ: project.customBoQ,
+        isOwnerDifferent: project.isOwnerDifferent,
+        ownerName: project.ownerName,
+        ownerPhone: project.ownerPhone,
+        paymentDue: project.paymentDue,
+        paymentReceived: project.paymentReceived,
+        priority: project.priority,
+        remarks: project.remarks,
+        selectedServices: project.selectedServices,
+        status: project.status,
+        trackingLink: trackingLink,
+      });
+      alert("Project updated successfully!");
+    } catch (error) {
+      console.error("Error updating project:", error);
+      alert("Error updating project.");
+    }
+  };
+
+  const handleTrackingLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTrackingLink(e.target.value);
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40 sm:py-4">
-      <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-6">
-        <div className="mx-auto grid max-w-[59rem] flex-1 auto-rows-max gap-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 p-6">
+      <main className="container mx-auto max-w-6xl">
+        <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="icon" className="h-7 w-7">
-              <ChevronLeft className="h-4 w-4" />
-              <span className="sr-only">Back</span>
+            <Button variant="outline" size="icon" className="rounded-full" onClick={() => router.back()}>
+              <ChevronLeft className="h-5 w-5" />
             </Button>
-            <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-              Work details
-            </h1>
-            <div className="hidden items-center gap-2 md:ml-auto md:flex">
-              <Button variant="outline" size="sm">
-                Discard
-              </Button>
-              <Button size="sm">Save Project</Button>
-            </div>
+            <h1 className="text-3xl font-bold text-gray-800">Work Details</h1>
           </div>
-          <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
-            <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
-              <Card x-chunk="dashboard-07-chunk-0">
-                <CardHeader>
-                  <CardTitle>Work Details</CardTitle>
-                  <CardDescription>
-                    Details of the project from work order
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-6">
-                    <div className="grid gap-3">
-                      <Label htmlFor="name">Name</Label>
-                      <Input
-                        id="name"
-                        type="text"
-                        className="w-full"
-                        defaultValue={project.name}
-                      />
-                    </div>
-                    <div className="grid gap-3">
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        id="description"
-                        defaultValue={project.location}
-                        className="min-h-32"
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card x-chunk="dashboard-07-chunk-1">
-                <CardHeader>
-                  <CardTitle>Project Requirements</CardTitle>
-                  <CardDescription>
-                    Requirements of work as per user request in quotation agreed.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[100px]">Point</TableHead>
-                        <TableHead>Descriptions</TableHead>
-                        <TableHead>Rate</TableHead>
-                        <TableHead className="w-[100px]">Qty</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell className="font-semibold">GGPC-001</TableCell>
-                        <TableCell>
-                          <Label htmlFor="stock-1" className="sr-only">
-                            Stock
-                          </Label>
-                          <Input id="stock-1" type="number" defaultValue="100" />
-                        </TableCell>
-                        <TableCell>
-                          <Label htmlFor="price-1" className="sr-only">
-                            Price
-                          </Label>
-                          <Input id="price-1" type="number" defaultValue="99.99" />
-                        </TableCell>
-                        <TableCell>
-                          <ToggleGroup type="single" defaultValue="s" variant="outline">
-                            <ToggleGroupItem value="s">1</ToggleGroupItem>
-                            <ToggleGroupItem value="m">2</ToggleGroupItem>
-                            <ToggleGroupItem value="l">3</ToggleGroupItem>
-                          </ToggleGroup>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-semibold">GGPC-002</TableCell>
-                        <TableCell>
-                          <Label htmlFor="stock-2" className="sr-only">
-                            Stock
-                          </Label>
-                          <Input id="stock-2" type="number" defaultValue="143" />
-                        </TableCell>
-                        <TableCell>
-                          <Label htmlFor="price-2" className="sr-only">
-                            Price
-                          </Label>
-                          <Input id="price-2" type="number" defaultValue="99.99" />
-                        </TableCell>
-                        <TableCell>
-                          <ToggleGroup type="single" defaultValue="m" variant="outline">
-                            <ToggleGroupItem value="s">1</ToggleGroupItem>
-                            <ToggleGroupItem value="m">2</ToggleGroupItem>
-                            <ToggleGroupItem value="l">3</ToggleGroupItem>
-                          </ToggleGroup>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-semibold">GGPC-003</TableCell>
-                        <TableCell>
-                          <Label htmlFor="stock-3" className="sr-only">
-                            Stock
-                          </Label>
-                          <Input id="stock-3" type="number" defaultValue="32" />
-                        </TableCell>
-                        <TableCell>
-                          <Label htmlFor="price-3" className="sr-only">
-                            Price
-                          </Label>
-                          <Input id="price-3" type="number" defaultValue="99.99" />
-                        </TableCell>
-                        <TableCell>
-                          <ToggleGroup type="single" defaultValue="s" variant="outline">
-                            <ToggleGroupItem value="s">1</ToggleGroupItem>
-                            <ToggleGroupItem value="m">2</ToggleGroupItem>
-                            <ToggleGroupItem value="l">3</ToggleGroupItem>
-                          </ToggleGroup>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </CardContent>
-                <CardFooter className="justify-center border-t p-4">
-                  <Button size="sm" variant="ghost" className="gap-1">
-                    <PlusCircle className="h-3.5 w-3.5" />
-                    Add Variant
-                  </Button>
-                </CardFooter>
-              </Card>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" onClick={() => router.back()}>Discard</Button>
+            <Button onClick={handleSaveProject} className="bg-blue-600 hover:bg-blue-700">
+              <Save className="mr-2 h-4 w-4" /> Save Project
+            </Button>
+          </div>
+        </div>
 
-              <Card x-chunk="dashboard-07-chunk-2">
-                <CardHeader>
-                  <CardTitle>Upload Bill</CardTitle>
-                  <CardDescription>
-                    Upload Final bill for the work
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+        <div className="grid gap-8 md:grid-cols-3">
+          <div className="md:col-span-2 space-y-8">
+            <Card className="overflow-hidden shadow-lg">
+              <CardHeader className="bg-gray-50 border-b">
+                <CardTitle className="text-xl">Project Information</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid gap-6 md:grid-cols-2">
                   <div>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      style={{ display: "none" }}
-                      onChange={handleFileChange}
-                    />
-                    <Button onClick={handleButtonClick} size="sm">
-                      <Upload className="mr-2 h-4 w-4" /> Upload Bill
-                    </Button>
+                    <Label htmlFor="name">Project Name</Label>
+                    <Input id="name" value={project.name} onChange={handleInputChange} className="mt-1" />
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="hidden md:block">
-              <Card x-chunk="dashboard-07-chunk-3">
-                <CardHeader>
-                  <CardTitle>Project Notes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    placeholder="Add notes for the project..."
-                    defaultValue={project.notes}
+                  <div>
+                    <Label htmlFor="location">Location</Label>
+                    <Input id="location" value={project.location} onChange={handleInputChange} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label htmlFor="area">Area (sqm)</Label>
+                    <Input id="area" type="number" value={project.area} onChange={handleInputChange} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label htmlFor="status">Status</Label>
+                    <Select onValueChange={handleStatusChange} defaultValue={project.status}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {statuses.map((status) => (
+                          <SelectItem key={status} value={status}>
+                            {status}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="boreHoleDepth">Bore Hole Depth (m)</Label>
+                    <Input id="boreHoleDepth" type="number" value={project.boreHoleDepth} onChange={handleInputChange} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label htmlFor="boreHoles">Number of Bore Holes</Label>
+                    <Input id="boreHoles" type="number" value={project.boreHoles} onChange={handleInputChange} className="mt-1" />
+                  </div>
+                </div>
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Switch id="customBoQ" checked={project.customBoQ} onCheckedChange={(checked) => handleSwitchChange("customBoQ", checked)} />
+                    <Label htmlFor="customBoQ">Custom BoQ</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Switch id="priority" checked={project.priority} onCheckedChange={(checked) => handleSwitchChange("priority", checked)} />
+                    <Label htmlFor="priority">Priority Project</Label>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden shadow-lg">
+              <CardHeader className="bg-gray-50 border-b">
+                <CardTitle className="text-xl">Financial Details</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div>
+                    <Label htmlFor="paymentDue">Payment Due</Label>
+                    <Input id="paymentDue" type="number" value={project.paymentDue} onChange={handleInputChange} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label htmlFor="paymentReceived">Payment Received</Label>
+                    <Input id="paymentReceived" type="number" value={project.paymentReceived} onChange={handleInputChange} className="mt-1" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden shadow-lg">
+              <CardHeader className="bg-gray-50 border-b">
+                <CardTitle className="text-xl">Owner Information</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="mb-4 flex items-center space-x-2">
+                  <Switch id="isOwnerDifferent" checked={project.isOwnerDifferent} onCheckedChange={(checked) => handleSwitchChange("isOwnerDifferent", checked)} />
+                  <Label htmlFor="isOwnerDifferent">Different from Client</Label>
+                </div>
+                {project.isOwnerDifferent && (
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div>
+                      <Label htmlFor="ownerName">Owner Name</Label>
+                      <Input id="ownerName" value={project.ownerName} onChange={handleInputChange} className="mt-1" />
+                    </div>
+                    <div>
+                      <Label htmlFor="ownerPhone">Owner Phone</Label>
+                      <Input id="ownerPhone" value={project.ownerPhone} onChange={handleInputChange} className="mt-1" />
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden shadow-lg">
+              <CardHeader className="bg-gray-50 border-b">
+                <CardTitle className="text-xl">Remarks</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <Textarea id="remarks" value={project.remarks} onChange={handleInputChange} className="min-h-[100px]" />
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden shadow-lg">
+              <CardHeader className="bg-gray-50 border-b">
+                <CardTitle className="text-xl">Tracking Link</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2">
+                  <Input 
+                    placeholder="Enter tracking link" 
+                    value={trackingLink} 
+                    onChange={handleTrackingLinkChange}
+                    className="flex-grow"
                   />
-                </CardContent>
-              </Card>
-            </div>
+                  <Button onClick={() => window.open(trackingLink, '_blank')} disabled={!trackingLink}>
+                    <LinkIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-8">
+            <Card className="overflow-hidden shadow-lg">
+              <CardHeader className="bg-gray-50 border-b">
+                <CardTitle className="text-xl">Document Uploads</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                <input type="file" ref={fileInputRef} style={{ display: "none" }} onChange={(e) => handleFileUpload(e, 'boq')} />
+                <Button onClick={() => fileInputRef.current?.click()} className="w-full">
+                  <Upload className="mr-2 h-4 w-4" /> Upload BoQ
+                </Button>
+                
+                <input type="file" ref={quotationInputRef} style={{ display: "none" }} onChange={(e) => handleFileUpload(e, 'quotation')} />
+                <Button onClick={() => quotationInputRef.current?.click()} className="w-full">
+                  <Upload className="mr-2 h-4 w-4" /> Upload Quotation
+                </Button>
+                
+                <input type="file" ref={reportInputRef} style={{ display: "none" }} onChange={(e) => handleFileUpload(e, 'report')} />
+                <Button onClick={() => reportInputRef.current?.click()} className="w-full">
+                  <Upload className="mr-2 h-4 w-4" /> Upload Report
+                </Button>
+                
+                <div className="mt-4 space-y-2">
+                  <h3 className="font-semibold">Uploaded Documents:</h3>
+                  {project.customBoqUrl && (
+                    <div className="flex items-center justify-between">
+                      <span>BoQ</span>
+                      <Button variant="outline" size="sm" onClick={() => window.open(project.customBoqUrl, '_blank')}>
+                        <FileText className="h-4 w-4 mr-2" /> View
+                      </Button>
+                    </div>
+                  )}
+                  {project.quotationUrl && (
+                    <div className="flex items-center justify-between">
+                      <span>Quotation</span>
+                      <Button variant="outline" size="sm" onClick={() => window.open(project.quotationUrl, '_blank')}>
+                        <FileText className="h-4 w-4 mr-2" /> View
+                      </Button>
+                    </div>
+                  )}
+                  {project.reportUrl && (
+                    <div className="flex items-center justify-between">
+                      <span>Report</span>
+                      <Button variant="outline" size="sm" onClick={() => window.open(project.reportUrl, '_blank')}>
+                        <FileText className="h-4 w-4 mr-2" /> View
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="overflow-hidden shadow-lg">
+              <CardHeader className="bg-gray-50 border-b">
+                <CardTitle className="text-xl">Project Updates</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <Input placeholder="Enter new update" value={newUpdate} onChange={(e) => setNewUpdate(e.target.value)} />
+                  <Button onClick={handleAddUpdate} className="w-full">
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Update
+                  </Button>
+                  <div className="mt-4 space-y-2">
+                    {project.updates.map((update: any) => (
+                      <div key={update.id} className="rounded-md bg-gray-100 p-3 text-sm">
+                        <span className="font-semibold">{update.date}:</span> {update.title}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>

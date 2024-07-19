@@ -27,6 +27,7 @@ const UserManagementPage = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       const usersCollection = collection(db, "users");
+      
       const userSnapshot = await getDocs(usersCollection);
       const userList = userSnapshot.docs.map(doc => ({
         ...(doc.data() as Omit<User, 'UserID'>),

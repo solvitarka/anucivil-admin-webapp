@@ -108,7 +108,7 @@ const UsersTable: React.FC<UsersTableProps> = ({ data }) => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => router.push(`/users/${user.UserID}`)}>
+              <DropdownMenuItem onClick={() => router.push(`/userProfile?userId=${user.UserID}`)}>
                 View user details
               </DropdownMenuItem>
             </DropdownMenuContent>
