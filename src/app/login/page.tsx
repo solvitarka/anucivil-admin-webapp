@@ -1,16 +1,14 @@
 // src/app/login/page.tsx
-'use client'; // This line makes sure the component is treated as a client component
+'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Adjusted to next/navigation
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase/firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { loginUser } from '@/services/Auth.service';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -20,22 +18,11 @@ const LoginPage = () => {
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-
-      if (userDoc.exists() && userDoc.data()?.isAdmin) {
-        router.push('/dashboard');
-      } else {
-        setError('You are not authorized to access this page.');
-      }
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('An unexpected error occurred.');
-      }
+    const result = await loginUser(email, password);
+    if (result.success && result.isAdmin) {
+      router.push('/dashboard');
+    } else {
+      setError(result.error || 'An unexpected error occurred.');
     }
   };
 

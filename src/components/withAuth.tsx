@@ -3,7 +3,7 @@
 
 import { useEffect, useState, ComponentType } from 'react';
 import { useRouter } from 'next/navigation'; // Use from next/navigation for app directory
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, getAuth, signOut } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase/firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -35,11 +35,20 @@ const withAuth = (WrappedComponent: ComponentType<WithAuthProps>) => {
       return () => unsubscribe();
     }, [router]);
 
+    const handleLogout = async () => {
+      try {
+        await signOut(auth);
+        router.push('/login'); // Redirect to the login page after logout
+      } catch (error) {
+        console.error("Error logging out:", error);
+      }
+    };
+
     if (loading) {
       return <div>Loading...</div>;
     }
 
-    return <WrappedComponent {...props} user={user} />;
+    return <WrappedComponent {...props} user={user} handleLogout={handleLogout} />;
   };
 
   return WithAuth;

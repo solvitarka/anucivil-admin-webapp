@@ -1,15 +1,7 @@
-import React, { useEffect, useState } from "react";
+// src/components/dashboard/HomeTable.tsx
+import React from "react";
 import { useRouter } from "next/navigation";
 import {
-  CaretSortIcon,
-  ChevronDownIcon,
-  DotsHorizontalIcon,
-} from "@radix-ui/react-icons";
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -23,12 +15,9 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -37,138 +26,32 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { doc, getDoc, DocumentReference } from "firebase/firestore";
-import { db } from "../../lib/firebase/firebaseConfig";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 
-interface Update {
-  date: string;
-  id: number;
-  title: string;
-}
+import { TableData, useHomeTableData, createColumns } from "@/services/Dashboard.HomeTable";
 
 interface TableComponentProps {
   data: TableData[];
   timeRange: "week" | "month" | "year";
 }
 
-interface TableData {
-  id: string;
-  name: string;
-  location: string;
-  updates: { date: string; id: number; title: string }[];
-  paymentReceived: number;
-  userID: DocumentReference;
-  status: string;
-}
-
-const fetchUserName = async (userRef: DocumentReference) => {
-  try {
-    const userSnap = await getDoc(userRef);
-    if (userSnap.exists()) {
-      return userSnap.data()?.name || "Unknown User";
-    } else {
-      return "Unknown User";
-    }
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    return "Unknown User";
-  }
-};
-
-
 const HomeTable: React.FC<TableComponentProps> = ({ data }) => {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [userNames, setUserNames] = useState<Record<string, string>>({});
   const router = useRouter();
-
-  useEffect(() => {
-    const loadUserNames = async () => {
-      const names: Record<string, string> = {};
-      for (const project of data) {
-        const name = await fetchUserName(project.userID);
-        names[project.userID.id] = name;
-      }
-      setUserNames(names);
-    };
-
-    loadUserNames();
-  }, [data]);
+  const {
+    sorting,
+    setSorting,
+    columnFilters,
+    setColumnFilters,
+    columnVisibility,
+    setColumnVisibility,
+    userNames,
+  } = useHomeTableData(data);
 
   const handleNavigation = (projectId: string) => {
     router.push(`/work?projectId=${projectId}`);
   };
-  const columns: ColumnDef<TableData>[] = [
-    {
-      accessorKey: "name",
-      header: "Project Name",
-      cell: ({ row }) => (
-        <div className="font-medium">{row.getValue("name")}</div>
-      ),
-    },
-    {
-      accessorKey: "location",
-      header: "Location",
-      cell: ({ row }) => row.getValue("location"),
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => (
-        <Badge
-          className="text-xs"
-          variant={row.getValue("status") === "Fulfilled" ? "secondary" : "outline"}
-        >
-          {row.getValue("status")}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "userID",
-      header: "User",
-      cell: ({ row }) => {
-        const userID = row.getValue("userID") as DocumentReference;
-        return userNames[userID.id] ?? "Loading...";
-      },
-    },
-    {
-      accessorKey: "updates",
-      header: "Latest Update",
-      cell: ({ row }) => {
-        const updates = row.getValue("updates") as Update[];
-        return updates.length > 0 ? updates[updates.length-1].date : "No updates";
-      },
-    },
-    {
-      accessorKey: "paymentReceived",
-      header: "Payment Received",
-      cell: ({ row }) => row.getValue("paymentReceived"),
-    },
-    {
-      id: "actions",
-      header: "Actions",
-      enableHiding: false,
-      cell: ({ row }) => {
-        const item = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <DotsHorizontalIcon className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleNavigation(item.id)}>
-                View work order
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
+
+  const columns = createColumns(userNames, handleNavigation);
 
   const table = useReactTable<TableData>({
     data,
@@ -285,5 +168,3 @@ const HomeTable: React.FC<TableComponentProps> = ({ data }) => {
 };
 
 export default HomeTable;
-
-//To Work on Click Action
