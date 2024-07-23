@@ -1,10 +1,14 @@
-// src/app/page.tsx
-import Image from "next/image";
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between bg-muted/40">
-      <h2>Anu Civil</h2>
-    </main>
-  );
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace('/dashboard');
+  }, [router]);
+
+  return null; // or a loading spinner if you want to show something during redirection
 }
