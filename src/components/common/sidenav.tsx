@@ -1,6 +1,7 @@
 // src/components/common/sidenav.tsx
 'use client';
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Tooltip,
   TooltipProvider,
@@ -19,7 +20,8 @@ import {
 import { useAuth } from "@/lib/authContext";
 
 export default function SideNav() {
-  const { user,signOut } = useAuth();
+  const { user, signOut } = useAuth();
+  const pathname = usePathname();
 
   if (!user) {
     return null;
@@ -32,6 +34,10 @@ export default function SideNav() {
     } catch (error) {
       console.error("Error signing out:", error);
     }
+  };
+
+  const isActive = (href: string) => {
+    return pathname === href ? "text-foreground" : "text-muted-foreground";
   };
 
   return (
@@ -48,7 +54,7 @@ export default function SideNav() {
           <TooltipTrigger asChild>
             <Link
               href="/dashboard"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:text-foreground md:h-8 md:w-8 ${isActive('/dashboard')}`}
             >
               <Home className="h-5 w-5" />
               <span className="sr-only">Dashboard</span>
@@ -60,7 +66,7 @@ export default function SideNav() {
           <TooltipTrigger asChild>
             <Link
               href="/work"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:text-foreground md:h-8 md:w-8 ${isActive('/work')}`}
             >
               <Package className="h-5 w-5" />
               <span className="sr-only">Products</span>
@@ -72,7 +78,7 @@ export default function SideNav() {
           <TooltipTrigger asChild>
             <Link
               href="/users"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:text-foreground md:h-8 md:w-8 ${isActive('/users')}`}
             >
               <Users2 className="h-5 w-5" />
               <span className="sr-only">Users</span>
@@ -84,7 +90,7 @@ export default function SideNav() {
           <TooltipTrigger asChild>
             <Link
               href="/analytics"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:text-foreground md:h-8 md:w-8 ${isActive('/analytics')}`}
             >
               <LineChart className="h-5 w-5" />
               <span className="sr-only">Analytics</span>
@@ -97,8 +103,8 @@ export default function SideNav() {
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
-              href="#"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+              href="/settings"
+              className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:text-foreground md:h-8 md:w-8 ${isActive('/settings')}`}
             >
               <Settings className="h-5 w-5" />
               <span className="sr-only">Settings</span>
