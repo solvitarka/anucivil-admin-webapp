@@ -1,7 +1,7 @@
-"use client"; // Add this directive at the top
+"use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowUpRight, ListFilter, File } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,105 +26,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import HomeTable from "./HomeTable"; // Import the new TableComponent
+import HomeTable from "./HomeTable";
 
-const data = [
-  {
-    customer: "Liam Johnson",
-    email: "liam@example.com",
-    type: "Sale",
-    status: "Fulfilled",
-    date: "2023-06-23",
-    amount: "$250.00",
-  },
-  {
-    customer: "Olivia Smith",
-    email: "olivia@example.com",
-    type: "Refund",
-    status: "In Progress",
-    date: "2023-06-24",
-    amount: "$150.00",
-  },
-  {
-    customer: "Noah Williams",
-    email: "noah@example.com",
-    type: "Subscription",
-    status: "Fulfilled",
-    date: "2023-06-25",
-    amount: "$350.00",
-  },
-  {
-    customer: "Liam Johnson",
-    email: "liam@example.com",
-    type: "Sale",
-    status: "Fulfilled",
-    date: "2023-06-23",
-    amount: "$250.00",
-  },
+const statuses = ["reportRecieved", "Sampling In Process", "Action Required", "Quotation Accepted", "Sent To Lab", "reportShipped", "Quotation Sent", "Quotation Requested", "quotationReviewRequired", "reportReviewRequired"];
 
-  {
-    customer: "Noah Williams",
-    email: "noah@example.com",
-    type: "Subscription",
-    status: "Payment Pending",
-    date: "2023-06-25",
-    amount: "$350.00",
-  },
-  {
-    customer: "Noah Williams",
-    email: "noah@example.com",
-    type: "Subscription",
-    status: "In Progress",
-    date: "2023-06-25",
-    amount: "$350.00",
-  },
-   {
-    customer: "Noah Williams",
-    email: "noah@example.com",
-    type: "Subscription",
-    status: "Fulfilled",
-    date: "2023-06-25",
-    amount: "$350.00",
-  },
-  {
-    customer: "Liam Johnson",
-    email: "liam@example.com",
-    type: "Sale",
-    status: "Fulfilled",
-    date: "2023-06-23",
-    amount: "$250.00",
-  },
-
-  {
-    customer: "Noah Williams",
-    email: "noah@example.com",
-    type: "Subscription",
-    status: "Payment Pending",
-    date: "2023-06-25",
-    amount: "$350.00",
-  },
-  {
-    customer: "Noah Williams",
-    email: "noah@example.com",
-    type: "Subscription",
-    status: "In Progress",
-    date: "2023-06-25",
-    amount: "$350.00",
-  },
-  {
-    customer: "Emma Brown",
-    email: "emma@example.com",
-    type: "Sale",
-    status: "At Laboratory",
-    date: "2023-06-26",
-    amount: "$450.00",
-  },
-];
-
-export default function InfoTable() {
-  const [filter, setFilter] = useState<string[]>(["Fulfilled", "Declined","In Progress","At Laboratory","Payment Pending"]);
-
-  const filteredData = data.filter(item => filter.includes(item.status));
+export default function InfoTable({data}: { data: any[] }) {
+  const [filter, setFilter] = useState<string[]>(statuses);
+  const [timeRange, setTimeRange] = useState<"week" | "month" | "year">("week");
 
   const handleFilterChange = (status: string) => {
     setFilter(prev =>
@@ -134,9 +42,13 @@ export default function InfoTable() {
     );
   };
 
+  const filteredData = data.filter(item => filter.includes(item.status));
+
+  console.log("InfoTable data:", data); // Debug statement
+
   return (
     <div className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
-      <Tabs defaultValue="week" className="xl:col-span-1">
+      <Tabs defaultValue="week" className="xl:col-span-1" onValueChange={(value) => setTimeRange(value as "week" | "month" | "year")}>
         <div className="flex items-center">
           <TabsList>
             <TabsTrigger value="week">Week</TabsTrigger>
@@ -144,89 +56,50 @@ export default function InfoTable() {
             <TabsTrigger value="year">Year</TabsTrigger>
           </TabsList> 
         </div>
-        <TabsContent value="week">
-          <Card>
-            <CardHeader className="flex flex-row items-center">
-              <div className="grid gap-2">
-                <CardTitle>Work Orders</CardTitle>
-                <CardDescription>
-                  Recent work orders from your app.
-                </CardDescription>
-              </div>
-              <div className="ml-auto gap-1">
-                <DropdownMenu >
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 gap-1 text-sm"
-                >
-                  <ListFilter className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only">Filter</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {["Fulfilled", "Declined","In Progress","At Laboratory","Payment Pending"].map(status => (
-                  <DropdownMenuCheckboxItem
-                    key={status}
-                    checked={filter.includes(status)}
-                    onCheckedChange={() => handleFilterChange(status)}
-                  >
-                    {status}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu></div>
-             
-            </CardHeader>
-            <CardContent>
-              <HomeTable data={filteredData} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="month">
-          <Card>
-            <CardHeader className="flex flex-row items-center">
-              <div className="grid gap-2">
-                <CardTitle>Work Orders</CardTitle>
-                <CardDescription>
-                  Recent work orders from your app.
-                </CardDescription>
-              </div>
-             <div className="ml-auto gap-1">
-                <DropdownMenu >
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 gap-1 text-sm"
-                >
-                  <ListFilter className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only">Filter</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {["Fulfilled", "Declined","In Progress","At Laboratory","Payment Pending"].map(status => (
-                  <DropdownMenuCheckboxItem
-                    key={status}
-                    checked={filter.includes(status)}
-                    onCheckedChange={() => handleFilterChange(status)}
-                  >
-                    {status}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu></div>
-            </CardHeader>
-            <CardContent>
-              <HomeTable data={filteredData} />
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {["week", "month", "year"].map((range) => (
+          <TabsContent key={range} value={range}>
+            <Card>
+              <CardHeader className="flex flex-row items-center">
+                <div className="grid gap-2">
+                  <CardTitle>Work Orders</CardTitle>
+                  <CardDescription>
+                    Recent work orders from your app.
+                  </CardDescription>
+                </div>
+                <div className="ml-auto gap-1">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 gap-1 text-sm"
+                      >
+                        <ListFilter className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only">Filter</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {statuses.map(status => (
+                        <DropdownMenuCheckboxItem
+                          key={status}
+                          checked={filter.includes(status)}
+                          onCheckedChange={() => handleFilterChange(status)}
+                        >
+                          {status}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <HomeTable data={filteredData} timeRange={timeRange} />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        ))}
       </Tabs>
     </div>
   );
