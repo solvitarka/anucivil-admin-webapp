@@ -63,7 +63,7 @@ export default function SideNav() {
           <TooltipContent side="right">Dashboard</TooltipContent>
         </Tooltip>
         <Tooltip>
-          <TooltipTrigger asChild>
+          {/* <TooltipTrigger asChild>
             <Link
               href="/work"
               className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:text-foreground md:h-8 md:w-8 ${isActive('/work')}`}
@@ -74,7 +74,7 @@ export default function SideNav() {
           </TooltipTrigger>
           <TooltipContent side="right">Products</TooltipContent>
         </Tooltip>
-        <Tooltip>
+        <Tooltip> */}
           <TooltipTrigger asChild>
             <Link
               href="/users"
@@ -86,8 +86,8 @@ export default function SideNav() {
           </TooltipTrigger>
           <TooltipContent side="right">Users</TooltipContent>
         </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
+        {/* <Tooltip> */}
+          {/* <TooltipTrigger asChild>
             <Link
               href="/analytics"
               className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:text-foreground md:h-8 md:w-8 ${isActive('/analytics')}`}
@@ -97,7 +97,7 @@ export default function SideNav() {
             </Link>
           </TooltipTrigger>
           <TooltipContent side="right">Analytics</TooltipContent>
-        </Tooltip>
+        </Tooltip> */}
       </nav>
       <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-4">
         <Tooltip>
