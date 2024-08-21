@@ -1,17 +1,17 @@
 // src/types/Project.ts
 export interface Project {
-    id: string;
+    id?: string;
     name: string;
     location: string;
-    area: string;
-    boreHoleDepth: string;
-    boreHoles: string;
-    customBoQ: string;
+    area: number | null;
+    boreHoleDepth: number | null;
+    boreHoles:number | null;
+    customBoQ: boolean;
     isOwnerDifferent: boolean;
     ownerName: string;
     ownerPhone: string;
-    paymentDue: string;
-    paymentReceived: string;
+    paymentDue: number | null;
+    paymentReceived: number | null;
     priority: boolean;
     remarks: string;
     selectedServices: string[];
@@ -20,6 +20,6 @@ export interface Project {
     customBoqUrl?: string;
     quotationUrl?: string;
     reportUrl?: string;
-    trackingLink?: string;
+    trackingLink: string | "";
   }
   

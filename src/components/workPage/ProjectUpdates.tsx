@@ -32,7 +32,7 @@ const ProjectUpdates: React.FC<ProjectUpdatesProps> = ({ project, setProject, pr
             <PlusCircle className="mr-2 h-4 w-4" /> Add Update
           </Button>
           <div className="mt-4 space-y-2">
-            {project.updates.map((update: any) => (
+            {project.updates && project.updates.map((update: any) => (
               <div key={update.id} className="rounded-md bg-gray-100 p-3 text-sm">
                 <span className="font-semibold">{update.date}:</span> {update.title}
               </div>
