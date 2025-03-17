@@ -14,6 +14,7 @@ import {
   Package,
   Users2,
   LogOut,
+  Briefcase,
 } from "lucide-react"
 import { useAuth } from "@/components/auth/state/auth.state";
 
@@ -60,12 +61,28 @@ export default function SideNav() {
               <TooltipContent side="right">Dashboard</TooltipContent>
             </Tooltip>
           </Link>
+          <Link href="/work" className={navItemClass('/work')}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Briefcase className="h-5 w-5" />
+              </TooltipTrigger>
+              <TooltipContent side="right">Work Orders</TooltipContent>
+            </Tooltip>
+          </Link>
           <Link href="/users" className={navItemClass('/users')}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Users2 className="h-5 w-5" />
               </TooltipTrigger>
               <TooltipContent side="right">Users</TooltipContent>
+            </Tooltip>
+          </Link>
+          <Link href="/userProfile" className={navItemClass('/userProfile')}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Package className="h-5 w-5" />
+              </TooltipTrigger>
+              <TooltipContent side="right">Profile</TooltipContent>
             </Tooltip>
           </Link>
         </div>

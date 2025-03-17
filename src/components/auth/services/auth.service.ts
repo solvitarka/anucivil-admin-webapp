@@ -1,6 +1,7 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/config/firebase/firebaseConfig';
+import Cookies from 'js-cookie';
 
 export interface LoginResult {
   success: boolean;
@@ -20,6 +21,8 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
     const userDoc = await getDoc(doc(db, 'users', user.uid));
 
     if (userDoc.exists() && userDoc.data()?.isAdmin) {
+      // Set auth cookie on successful login
+      Cookies.set('auth', 'true', { expires: 7 }); // Expires in 7 days
       return { success: true, isAdmin: true, user };
     } else {
       return { success: false, error: 'You are not authorized to access this page.' };
@@ -34,7 +37,9 @@ export const loginUser = async (email: string, password: string): Promise<LoginR
 };
 
 export const signOut = async (): Promise<void> => {
-  return firebaseSignOut(auth);
+  await firebaseSignOut(auth);
+  // Remove auth cookie on sign out
+  Cookies.remove('auth');
 };
 
 export const getCurrentUser = (): Promise<AuthUser | null> => {
@@ -47,14 +52,19 @@ export const getCurrentUser = (): Promise<AuthUser | null> => {
           try {
             const userDoc = await getDoc(doc(db, 'users', user.uid));
             if (userDoc.exists() && userDoc.data()?.isAdmin) {
+              // Ensure cookie is set if user is authenticated
+              Cookies.set('auth', 'true', { expires: 7 });
               resolve({ ...user, isAdmin: true } as AuthUser);
             } else {
+              Cookies.remove('auth');
               resolve(null);
             }
           } catch (error) {
+            Cookies.remove('auth');
             reject(error);
           }
         } else {
+          Cookies.remove('auth');
           resolve(null);
         }
       },
