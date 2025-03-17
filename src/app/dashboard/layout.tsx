@@ -4,10 +4,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="bg-muted/40 ">
-
-        {children}
-
+    <div className="min-h-screen w-full bg-muted/40 p-4 sm:p-6">
+      {children}
     </div>
   );
 }
